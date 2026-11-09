@@ -1,0 +1,20 @@
+{
+  "name": "nexus-fnb-bms-plan",
+  "version": "1.0.0",
+  "description": "Master SSOT Plan, SRS, Architecture, Roadmap & Antigravity Execution Blueprint for Nexus FnB BMS (Malaysia Edition)",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "nexus-fnb",
+    "bms",
+    "pos",
+    "malaysia",
+    "lhdn",
+    "myinvois",
+    "sst",
+    "antigravity"
+  ],
+  "author": "Nexus Team",
+  "license": "UNLICENSED"
+}
