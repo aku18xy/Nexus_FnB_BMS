@@ -36,10 +36,13 @@ All project planning, software requirements specifications (SRS), system archite
 
 ---
 
-## 🛠️ Repository & Development
+## 🛠️ Repository & Endpoints
 * **Git Repository:** [https://github.com/aku18xy/Nexus_FnB_BMS.git](https://github.com/aku18xy/Nexus_FnB_BMS.git)
+* **Application Endpoint (Vercel):** [https://nexus-fnb-bms.vercel.app](https://nexus-fnb-bms.vercel.app)
+  * **Vercel Project:** `nexus-fnb-bms` (ID: `prj_nBSVXa8A8ieWesSmRPhYpojqXJro`)
+  * **Region:** `sin1` (Singapore / closest low latency to Malaysia)
 * **Live SSOT Plan Portal (Vercel):** [https://nexus-fnb-bms-plan.vercel.app](https://nexus-fnb-bms-plan.vercel.app)
-* **Vercel Project:** `nexus-fnb-bms-plan` (Root: `plan/`)
+  * **Vercel Project:** `nexus-fnb-bms-plan` (Root: `plan/`)
 * **Interactive Plan & Documentation Directory:** [`plan/`](./plan/)
   * [`plan/index.html`](./plan/index.html) — Interactive React SSOT Master Planning App
   * [`plan/docs/SRS.md`](./plan/docs/SRS.md) — Software Requirements Specification
