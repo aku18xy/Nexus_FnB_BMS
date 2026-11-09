@@ -9,35 +9,47 @@
 
 Nexus FnB BMS implements an **Offline-First Hybrid Edge-and-Cloud Architecture**. 
 
-```
-                               ┌────────────────────────────────────────────────┐
-                               │               Cloud HQ (Vercel / AWS)          │
-                               │  - NestJS / Node.js Modular Monolith API       │
-                               │  - PostgreSQL (Primary Data Store)             │
-                               │  - Redis (Cache, BullMQ Async Jobs)            │
-                               │  - LHDN MyInvois Gateway Worker                │
-                               │  - Central Commissary & Inventory Ledger       │
-                               │  - Executive BI Dashboard (Next.js)            │
-                               └───────────────────────▲────────────────────────┘
-                                                       │
-                                        HTTPS / TLS 1.3│ (WebSocket / Sync API)
-                                                       │
-                 ┌─────────────────────────────────────┴─────────────────────────────────────┐
-                 │                                                                           │
-┌────────────────▼────────────────────────┐                               ┌──────────────────▼─────────────────────┐
-│          Outlet A: FSR (Restaurant)     │                               │         Outlet B: QSR (Kiosk)          │
-│ ┌─────────────────────────────────────┐ │                               │ ┌────────────────────────────────────┐ │
-│ │ In-Store Edge Master (POS 01)       │ │                               │ │ In-Store Smart POS (Sunmi/iMin)    │ │
-│ │ - Local SQLite Database             │ │                               │ │ - Local SQLite Database            │ │
-│ │ - Embedded Sync Agent               │ │                               │ │ - Direct ESC/POS Driver            │ │
-│ │ - Local WebSocket Hub               │ │                               │ │ - Customer Facing Screen (CFD)     │ │
-│ └──────────────────┬──────────────────┘ │                               │ └─────────────────┬──────────────────┘ │
-│                    │ LAN / Wi-Fi        │                               │                   │ USB / Bluetooth    │
-│    ┌───────────────┼───────────────┐    │                               │    ┌──────────────┴──────────────┐     │
-│    ▼               ▼               ▼    │                               │    ▼                             ▼     │
-│ Mobile Waiter   Kitchen KDS   ESC/POS   │                               │ Integrated Printer            Cash     │
-│ Terminals       Screens       Printers  │                               │ & Dynamic QR Screen           Drawer   │
-└─────────────────────────────────────────┘                               └────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph CLOUD["☁️ Tier 1: Cloud HQ (Vercel & AWS)"]
+        direction TB
+        API["⚡ NestJS Modular API"]
+        DB[("🗄️ PostgreSQL 16 Central DB")]
+        QUEUE["📦 Redis + BullMQ Queue"]
+        LHDN["🇲🇾 LHDN MyInvois Worker"]
+        API <--> DB
+        API <--> QUEUE
+        QUEUE <--> LHDN
+    end
+
+    CLOUD <== "⇅ HTTPS / TLS 1.3 (Idempotent Outbox Sync)" ==> EDGE
+
+    subgraph EDGE["🏢 Tier 2: In-Store Edge Gateway (Zero-Downtime Node)"]
+        direction TB
+        SQLITE[("💾 Local SQLite Database")]
+        WSHUB["📡 Local WebSocket Broker"]
+        DRIVER["🖨️ Raw ESC/POS Driver (TCP 9100)"]
+        SQLITE <--> WSHUB
+        WSHUB <--> DRIVER
+    end
+
+    EDGE --- LAN(("🌐 Local Subnet LAN / Wi-Fi 6"))
+
+    subgraph FOH["📱 Front-of-House (FOH)"]
+        POS_FSR["🍽️ FSR Counter (Table Map & Tabs)"]
+        POS_QSR["🥤 QSR Kiosk (Rapid Tap & Token Queue)"]
+        WAITER["📲 Sunmi V2s Handhelds"]
+        CFD["🖥️ Customer Facing Display (Dynamic DuitNow QR)"]
+    end
+
+    subgraph KITCHEN["🍳 Kitchen & Production (BOH)"]
+        KDS["📟 Multi-Station KDS Screens"]
+        PRT_KITCHEN["🖨️ 80mm LAN Kitchen Printers"]
+        DRAWER["💵 RJ11 Cash Drawer (Kick Pulse)"]
+    end
+
+    LAN --> FOH
+    LAN --> KITCHEN
 ```
 
 ---

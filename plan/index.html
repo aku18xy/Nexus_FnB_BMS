@@ -506,30 +506,198 @@
                     Unifi and Maxis fiber outages are common occurrences in Malaysian commercial retail lots. Nexus FnB BMS implements an in-store local SQLite master node that keeps all POS terminals, waiter handhelds, and kitchen printers running with zero latency. Cloud sync happens via an idempotent outbox pattern.
                   </p>
 
-                  <div class="p-6 bg-slate-950 rounded-lg border border-slate-800 font-mono text-xs overflow-x-auto text-emerald-300 leading-relaxed custom-scrollbar">
-                    {`
-+-----------------------------------------------------------------------------------------------+
-|                                      CLOUD HQ (Vercel + AWS)                                  |
-|   [NestJS Modular API] <---> [PostgreSQL 16 Multi-Outlet DB] <---> [Redis / BullMQ Queue]     |
-|   - Master Menu & Pricing   - Central Commissary Ledger       - LHDN MyInvois Gateway Worker  |
-+-----------------------------------------------▲-----------------------------------------------+
-                                                │
-                               HTTPS Delta Sync │ (Local Outbox Event Pattern)
-                                                │
-+-----------------------------------------------▼-----------------------------------------------+
-|                                IN-STORE LOCAL EDGE GATEWAY                                    |
-|   [Embedded SQLite Database] <---> [Local WebSocket Broker] <---> [Raw ESC/POS Driver Service] |
-|   - Instant Table Lock State       - Waiter Mobile Handheld Sync   - Port 9100 Direct RAW TCP |
-+-----------------------------------------------------------------------------------------------+
-         │                                       │                                     │
-         ▼                                       ▼                                     ▼
-+---------------------+               +---------------------+               +---------------------+
-|   Counter POS (FSR) |               |  Kitchen KDS Screens|               | Thermal Printers    |
-| - Table Floor Grid  |               | - Station Filtering |               | - Hot Kitchen (LAN) |
-| - Bill Split & Merge|               | - Color Time Alerts |               | - Drink Bar (LAN)   |
-| - DuitNow Dynamic QR|               | - Audio Prep Chime  |               | - Cash Drawer (RJ11)|
-+---------------------+               +---------------------+               +---------------------+
-                    `}
+                  {/* Clean Responsive Visual Architecture Diagram */}
+                  <div class="relative space-y-4">
+                    {/* Tier 1: Cloud HQ */}
+                    <div class="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-teal-950/60 border border-emerald-500/40 rounded-xl p-5 shadow-lg relative">
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                          <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">☁️</span>
+                          <div>
+                            <span class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-bold">Tier 1 • Central Cloud Layer</span>
+                            <h4 class="text-sm font-bold text-white">Cloud HQ (Vercel & AWS Infrastructure)</h4>
+                          </div>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full">
+                          Multi-Outlet Central Ledger
+                        </span>
+                      </div>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-emerald-400 flex items-center gap-1.5 mb-1">
+                            <span>⚡</span> NestJS Modular API
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">REST & WSS Gateway, Multi-tenant Auth, Menus & Shift Closures</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-teal-400 flex items-center gap-1.5 mb-1">
+                            <span>🗄️</span> PostgreSQL 16 Primary DB
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">Master Recipe BOM, Outlet Tables, Audit Trail & Financial Journals</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-amber-400 flex items-center gap-1.5 mb-1">
+                            <span>🇲🇾</span> LHDN MyInvois & Redis
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">BullMQ Async Queue, Monthly B2C Consolidated & Real-Time B2B</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bridge Connector: HTTPS / WSS Sync */}
+                    <div class="flex flex-col items-center justify-center my-1">
+                      <div class="w-0.5 h-3 bg-emerald-500/50"></div>
+                      <div class="bg-slate-900 border border-emerald-500/40 rounded-full px-4 py-1.5 flex items-center gap-2 shadow-md">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span class="text-[11px] font-mono font-semibold text-emerald-300 text-center">
+                          ⇅ HTTPS / TLS 1.3 Outbox Delta Sync (Zero Data Loss)
+                        </span>
+                      </div>
+                      <div class="w-0.5 h-3 bg-emerald-500/50"></div>
+                    </div>
+
+                    {/* Tier 2: In-Store Edge Gateway */}
+                    <div class="bg-slate-900 border border-teal-500/40 rounded-xl p-5 shadow-lg relative">
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                          <span class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center text-base">🏢</span>
+                          <div>
+                            <span class="text-xs font-mono uppercase tracking-wider text-teal-400 font-bold">Tier 2 • In-Store Node</span>
+                            <h4 class="text-sm font-bold text-white">In-Store Edge Gateway (Local Resilient Core)</h4>
+                          </div>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 bg-teal-500/10 text-teal-300 border border-teal-500/30 rounded-full">
+                          100% Offline Operational
+                        </span>
+                      </div>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-teal-400 flex items-center gap-1.5 mb-1">
+                            <span>💾</span> Local SQLite Engine
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">Zero-latency table lock, tabs, order line items & outbox event spool</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-cyan-400 flex items-center gap-1.5 mb-1">
+                            <span>📡</span> Local WebSocket Broker
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">Sub-50ms sync across counter POS, waiter handhelds & KDS screens</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                          <div class="font-bold text-emerald-400 flex items-center gap-1.5 mb-1">
+                            <span>🖨️</span> Raw ESC/POS Service
+                          </div>
+                          <p class="text-[11px] text-slate-400 leading-relaxed">Direct TCP Socket (Port 9100) bypassing OS spoolers for instant printing</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Station Distributors Connector */}
+                    <div class="flex flex-col items-center justify-center my-1">
+                      <div class="w-0.5 h-3 bg-teal-500/50"></div>
+                      <div class="bg-slate-900 border border-slate-700 rounded-full px-4 py-1 flex items-center gap-2">
+                        <span class="text-[10px] font-mono text-slate-400">↓ Local Subnet LAN (Wi-Fi 6 / Ethernet / USB)</span>
+                      </div>
+                      <div class="w-0.5 h-3 bg-teal-500/50"></div>
+                    </div>
+
+                    {/* Tier 3: In-Store Operational Stations */}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Station 1: FOH Terminals */}
+                      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-emerald-500/40 transition">
+                        <div>
+                          <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800">
+                            <span class="text-base">🖥️</span>
+                            <h5 class="text-xs font-bold text-white uppercase tracking-wider">Front-of-House (FOH)</h5>
+                          </div>
+                          <ul class="space-y-1.5 text-[11px] text-slate-300">
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-emerald-400 font-bold">▸</span>
+                              <span><strong>FSR:</strong> Interactive table map, courses & split bills</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-teal-400 font-bold">▸</span>
+                              <span><strong>QSR:</strong> Rapid tap catalog (&lt;15s) & token generation</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-blue-400 font-bold">▸</span>
+                              <span><strong>Mobile:</strong> Sunmi V2s waiter table-side ordering</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-purple-400 font-bold">▸</span>
+                              <span><strong>CFD:</strong> Dynamic DuitNow QR & tax itemization</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-900 text-[10px] font-mono text-slate-500">
+                          Protocol: HTTP/WSS via LAN
+                        </div>
+                      </div>
+
+                      {/* Station 2: Kitchen Display System (KDS) */}
+                      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-teal-500/40 transition">
+                        <div>
+                          <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800">
+                            <span class="text-base">🍳</span>
+                            <h5 class="text-xs font-bold text-white uppercase tracking-wider">Kitchen & Production (KDS)</h5>
+                          </div>
+                          <ul class="space-y-1.5 text-[11px] text-slate-300">
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-emerald-400 font-bold">▸</span>
+                              <span><strong>Bump Bar UI:</strong> Order status progression (Prep → Done)</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-amber-400 font-bold">▸</span>
+                              <span><strong>Station Routing:</strong> Hot Wok, Cold Station & Bar filtering</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-rose-400 font-bold">▸</span>
+                              <span><strong>Time Alerts:</strong> Color thresholds (&lt;10m green, &gt;15m red)</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-cyan-400 font-bold">▸</span>
+                              <span><strong>Audio Chime:</strong> Pleasant audio cue on new tickets</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-900 text-[10px] font-mono text-slate-500">
+                          Protocol: WebSocket Push
+                        </div>
+                      </div>
+
+                      {/* Station 3: Thermal Printers & Cash */}
+                      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-cyan-500/40 transition">
+                        <div>
+                          <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800">
+                            <span class="text-base">🖨️</span>
+                            <h5 class="text-xs font-bold text-white uppercase tracking-wider">Hardware Peripherals</h5>
+                          </div>
+                          <ul class="space-y-1.5 text-[11px] text-slate-300">
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-emerald-400 font-bold">▸</span>
+                              <span><strong>Kitchen Printers:</strong> 80mm LAN (Hot Kitchen, Drink Bar)</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-teal-400 font-bold">▸</span>
+                              <span><strong>Receipt Printer:</strong> 80mm USB/LAN with LHDN QR code</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-amber-400 font-bold">▸</span>
+                              <span><strong>Cash Drawer:</strong> RJ11 24V pulse kick on settlement</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                              <span class="text-blue-400 font-bold">▸</span>
+                              <span><strong>Calling Display:</strong> HDMI/TV screen for token queue</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-900 text-[10px] font-mono text-slate-500">
+                          Protocol: Raw Port 9100 / ESC/POS
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
