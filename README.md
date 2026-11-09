@@ -32,11 +32,12 @@ Nexus FnB BMS is an in-house enterprise business management system specifically 
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ System Architecture (100% Vercel Production Native)
 
-* **Offline-First Hybrid Edge**: Local in-store SQLite master node ensures zero downtime during Unifi / Maxis fiber outages.
-* **Raw ESC/POS Driver**: Direct TCP/IP socket printing over port 9100 to 80mm thermal printers with buzzer pulses.
-* **Cloud HQ**: Central PostgreSQL database, NestJS modular API, Redis queues, and multi-outlet commissary management.
+* **100% Vercel Cloud Serverless**: Zero AWS, zero GCP, and zero dedicated VPS servers. Cloud HQ, executive analytics, master recipe BOM, and REST/Server Action APIs are hosted on Next.js 15 on Vercel Fluid Compute.
+* **Serverless Storage & Queues**: Neon Postgres (ACID central ledger), Upstash Redis (table session locks), Vercel Blob (Halal certs & PDF receipts), and Vercel Cron (LHDN monthly consolidated e-invoice batch).
+* **In-Store Offline-First PWA**: Browser IndexedDB local cache guarantees zero downtime during Unifi / Maxis fiber outages.
+* **Hardware & Printing**: Direct ESC/POS printing over port 9100 and USB/LAN bridge for instant 80mm kitchen tickets and RJ11 cash drawer kick pulses.
 
 ---
 

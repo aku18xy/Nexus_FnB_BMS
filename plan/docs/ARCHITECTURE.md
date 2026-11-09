@@ -1,70 +1,74 @@
 # System Architecture & Technical Specifications
 ## Nexus FnB Business Management System (Malaysia Edition)
-**Document Version:** 1.0.0  
+**Document Version:** 2.0.0 (100% Vercel Production Native)  
 **Classification:** Single Source of Truth (SSOT)
 
 ---
 
 ### 1. Architectural Overview
 
-Nexus FnB BMS implements an **Offline-First Hybrid Edge-and-Cloud Architecture**. 
+Nexus FnB BMS implements a **100% Vercel-Native Serverless Production Architecture** paired with an **In-Store Offline-First PWA Edge Engine**. 
+
+> [!IMPORTANT]
+> **Zero External Cloud Virtual Machines**: The final production system is strictly hosted on **Vercel** and its managed ecosystem (Neon Postgres, Vercel Blob, Vercel Cron, Upstash Redis). No AWS EC2, GCP compute instances, or dedicated Linux VPS servers are required.
 
 ```mermaid
 graph TD
-    subgraph CLOUD["☁️ Tier 1: Cloud HQ (Vercel & AWS)"]
+    subgraph VERCEL["⚡ 100% VERCEL PRODUCTION CLOUD"]
         direction TB
-        API["⚡ NestJS Modular API"]
-        DB[("🗄️ PostgreSQL 16 Central DB")]
-        QUEUE["📦 Redis + BullMQ Queue"]
-        LHDN["🇲🇾 LHDN MyInvois Worker"]
-        API <--> DB
-        API <--> QUEUE
-        QUEUE <--> LHDN
+        NEXTJS["🌐 Next.js 15 Full-Stack App (Fluid Compute)<br/>• Management & Analytics Dashboard<br/>• Central Menu, Pricing & Recipe BOM<br/>• REST APIs & Server Actions"]
+        NEON[("🗄️ Neon Serverless Postgres<br/>• ACID Relational Store<br/>• Outlet Ledgers & Audit Logs")]
+        BLOB["🗂️ Vercel Blob<br/>• Supplier Halal Certs<br/>• Staff Typhoid Records<br/>• Generated PDF Tax Receipts"]
+        CRON["⏰ Vercel Cron & Queues<br/>• Monthly LHDN Consolidated Batch<br/>• Halal Expiry Alerts (60/30 Days)"]
+        REDIS["⚡ Upstash Redis (Vercel Marketplace)<br/>• Real-Time Table Locks & Caching"]
+        
+        NEXTJS <--> NEON
+        NEXTJS <--> BLOB
+        NEXTJS <--> CRON
+        NEXTJS <--> REDIS
     end
 
-    CLOUD <== "⇅ HTTPS / TLS 1.3 (Idempotent Outbox Sync)" ==> EDGE
+    VERCEL <== "⇅ HTTPS / TLS 1.3 (PWA Sync & Webhooks)" ==> STORES
 
-    subgraph EDGE["🏢 Tier 2: In-Store Edge Gateway (Zero-Downtime Node)"]
+    subgraph STORES["🏪 In-Store Physical Outlets (FSR & QSR)"]
         direction TB
-        SQLITE[("💾 Local SQLite Database")]
-        WSHUB["📡 Local WebSocket Broker"]
-        DRIVER["🖨️ Raw ESC/POS Driver (TCP 9100)"]
-        SQLITE <--> WSHUB
-        WSHUB <--> DRIVER
+        PWA["📱 POS Progressive Web App (PWA)<br/>• Loaded directly from Vercel<br/>• Local IndexedDB for 100% Offline Resilience<br/>• Instant 4-digit PIN Switching"]
+        BRIDGE["🖨️ In-Store LAN / USB Print Bridge<br/>• Direct Raw Port 9100 ESC/POS<br/>• Cash Drawer RJ11 Kick Pulse"]
+        PWA <--> BRIDGE
     end
 
-    EDGE --- LAN(("🌐 Local Subnet LAN / Wi-Fi 6"))
+    STORES --- DEVICES(("🌐 In-Store Local LAN & Hardware"))
 
     subgraph FOH["📱 Front-of-House (FOH)"]
-        POS_FSR["🍽️ FSR Counter (Table Map & Tabs)"]
-        POS_QSR["🥤 QSR Kiosk (Rapid Tap & Token Queue)"]
-        WAITER["📲 Sunmi V2s Handhelds"]
+        POS_FSR["🍽️ FSR Table Grid & Open Tabs"]
+        POS_QSR["🥤 QSR Rapid Tap (&lt;15s) & Token Queue"]
+        WAITER["📲 Sunmi V2s Waiter Handhelds"]
         CFD["🖥️ Customer Facing Display (Dynamic DuitNow QR)"]
     end
 
     subgraph KITCHEN["🍳 Kitchen & Production (BOH)"]
         KDS["📟 Multi-Station KDS Screens"]
-        PRT_KITCHEN["🖨️ 80mm LAN Kitchen Printers"]
+        PRT_KITCHEN["🖨️ 80mm LAN Thermal Printers (Hot/Bar/Cold)"]
         DRAWER["💵 RJ11 Cash Drawer (Kick Pulse)"]
     end
 
-    LAN --> FOH
-    LAN --> KITCHEN
+    DEVICES --> FOH
+    DEVICES --> KITCHEN
 ```
 
 ---
 
-### 2. Technology Stack Selection
+### 2. 100% Vercel Technology Stack Selection
 
-| Tier | Technology | Justification |
+| Tier / Component | Technology | Production Justification & Function |
 | :--- | :--- | :--- |
-| **Cloud Backend API** | **NestJS (TypeScript)** | Enterprise modularity, strict typing, dependency injection, and out-of-the-box Swagger/OpenAPI. |
-| **Primary Database** | **PostgreSQL 16** | ACID compliance, JSONB support for recipe variants, rock-solid transactional safety for ledger data. |
-| **Async Queues & Cache**| **Redis + BullMQ** | LHDN submission retries, bulk consolidated invoice generation, real-time WebSocket pub/sub. |
-| **FOH POS Frontend** | **React / Vite / Tailwind** (or Electron for Windows / Flutter for Android) | Fast responsive rendering, low memory footprint, zero dependency on web browser print dialogs. |
-| **QR Table Ordering**| **Next.js (App Router)** | Ultra-lightweight SSR/PWA, sub-second load times on mobile 4G/5G, no native app install required. |
-| **KDS (Kitchen Display)**| **React Web App + WebSockets** | Real-time order bump bar interface with sound alerts and multi-station routing. |
-| **Printing Driver** | **Raw ESC/POS Socket (TCP/IP & USB)** | Bypasses slow OS printer spoolers; sends raw byte streams directly to thermal heads with cutter & cash drawer pulses. |
+| **Cloud Hosting & Full-Stack Core** | **Next.js 15 on Vercel (Fluid Compute)** | Eliminates AWS/VPS completely. Automatic scaling during peak lunch/dinner rushes. Unified codebase for APIs, Server Actions, and SSR Dine-In QR menus. |
+| **Primary Relational Database** | **Neon Postgres (Vercel Marketplace)** | Serverless PostgreSQL with auto-scaling, point-in-time recovery, connection pooling, and zero idle-server maintenance. |
+| **Statutory Batch Workers** | **Vercel Cron & Serverless Functions** | Automates end-of-month LHDN MyInvois B2C consolidated batch generation and 60-day supplier Halal certification expiration alerts. |
+| **Compliance & Document Storage** | **Vercel Blob** | Secure cloud storage for supplier Halal certificates, employee typhoid vaccination records (*Suntikan Tifoid*), and generated PDF tax invoices. |
+| **Session Locks & Cache** | **Upstash Redis (Vercel Marketplace)** | Millisecond table-locking (prevents double-seating across waiter handhelds) and cashier float cache. |
+| **In-Store POS Terminal** | **Next.js PWA + IndexedDB** | Runs directly in Chrome/Edge on Windows, iPad, or Sunmi/iMin POS terminals. 100% operational offline when local ISP fibre drops. |
+| **Thermal Printing Driver** | **In-Store Local Bridge / WebUSB** | Lightweight native bridge dispatching raw ESC/POS bytes over TCP port 9100 directly to 80mm kitchen/receipt printers and cash drawers. |
 
 ---
 
