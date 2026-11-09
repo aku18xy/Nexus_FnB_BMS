@@ -1,0 +1,19 @@
+{
+  "name": "nexus-fnb-bms-plan",
+  "version": "1.0.0",
+  "description": "Master plan, SRS, Architecture, and Project Blueprint for Nexus FnB BMS (Malaysia Edition)",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "nexus-fnb",
+    "bms",
+    "pos",
+    "malaysia",
+    "lhdn",
+    "myinvois",
+    "sst"
+  ],
+  "author": "Nexus Team",
+  "license": "UNLICENSED"
+}
