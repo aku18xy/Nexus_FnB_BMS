@@ -2,7 +2,8 @@
 
 **Proprietary Multi-Format Restaurant & Kiosk Management System**  
 **Repository:** [https://github.com/aku18xy/Nexus_FnB_BMS.git](https://github.com/aku18xy/Nexus_FnB_BMS.git)  
-**Plan & SSOT Portal:** `plan/` (Vercel Project: `nexus-fnb-bms-plan`)
+**Live SSOT Plan Portal (Vercel):** [https://nexus-fnb-bms-plan.vercel.app](https://nexus-fnb-bms-plan.vercel.app)  
+**Vercel Project:** `nexus-fnb-bms-plan` (Root: `plan/`)
 
 ---
 
